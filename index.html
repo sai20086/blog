@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buzzer Blog</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@tailwindcss/browser@latest"></script>
+    <link href="https://fonts.cdnfonts.com/css/outrun-future" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Custom CSS for Blog Styles */
+        /* Base (Light) Mode Variables */
+        :root {
+            --background-color: #f8f8f8; /* Slightly off-white background for less strain */
+            --text-color: #222222; /* Darker text for better contrast */
+            --heading-color: #111111; /* Even darker headings */
+            --primary-color: #007bff; /* Example light mode primary color (Blue) */
+            --primary-hover-color: #0056b3;
+            --secondary-color: #e9ecef; /* Slightly darker gray secondary for better card background contrast */
+            --secondary-hover-color: #d3d9df;
+            --muted-text-color: #5a6268; /* Darker muted gray text */
+            --border-color: #ced4da; /* Darker gray border for better visibility */
+            --accent-color: #007bff; /* Accent color matches primary */
+            --accent-hover-color: #0056b3;
+
+            /* Neon colors might still be used in header/logo, keep them */
+            --neon-pink: #ff00cc;
+            --neon-blue: #36e2f8;
+            --neon-purple: #b026ff;
+            --deep-purple: #220033; /* Keep for background elements if needed */
+            --dark-bg: #0f0c29; /* Keep for background elements if needed */
+            --grid-color: rgba(54, 226, 248, 0.5); /* Keep for background elements if needed */
+        }
+
+        /* Dark Mode Overrides */
+        body.dark-mode {
+            --background-color: #0f0c29; /* Dark background */
+            --text-color: #e0e0e0; /* Light text */
+            --heading-color: #ffffff; /* White headings */
+            --primary-color: #009688; /* Original dark primary color (Teal) */
+            --primary-hover-color: #00796b;
+            --secondary-color: #1a202c; /* Dark background for cards/widgets in dark mode */
+            --secondary-hover-color: #2d3748;
+            --muted-text-color: #b0b0b0; /* Muted light gray text */
+            --border-color: rgba(54, 226, 248, 0.3); /* Neon blue border */
+            --accent-color: #93c5fd; /* Tailwind's blue-200 */
+            --accent-hover-color: #60a5fa; /* Tailwind's blue-300 */
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            margin: 0;
+            transition: background-color 0.5s ease, color 0.5s ease; /* Smooth transition for theme change */
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        .scene-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            perspective: 1000px;
+            display: none; /* Removed background elements */
+        }
+
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #000000 0%, #220033 80%, #b026ff 100%);
+        }
+
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70%;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite alternate;
+        }
+
+        .sun {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(to top, var(--neon-pink), #ffc107);
+            border-radius: 50%;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 40px 15px var(--neon-pink);
+            z-index: -1;
+            opacity: 0.8;
+        }
+
+        .grid {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40vh;
+            background-image:
+                linear-gradient(
+                    to bottom,
+                    rgba(0, 0, 0, 0) 0%,
+                    var(--grid-color) 20%,
+                    var(--grid-color) 30%,
+                    rgba(0, 0, 0, 0) 100%
+                ),
+                linear-gradient(
+                    to right,
+                    var(--grid-color),
+                    var(--grid-color) 1px,
+                    rgba(0, 0, 0, 0) 1px,
+                    rgba(0, 0, 0, 0)
+                );
+            background-size: 40px 40px;
+            transform: rotateX(60deg);
+            transform-origin: bottom;
+            animation: moveGrid 15s linear infinite;
+        }
+
+        .mountains {
+            position: absolute;
+            width: 100%;
+            height: 200px;
+            bottom: 30%;
+            z-index: -1;
+        }
+
+        .mountain {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-bottom: 200px solid #1b0033;
+        }
+
+        .mountain1 { left: 10%; }
+        .mountain2 { left: 30%; border-bottom-color: #2d0057; }
+        .mountain3 { left: 50%; border-bottom-color: #3e007a; }
+        .mountain4 { left: 70%; border-bottom-color: #2d0057; }
+        .mountain5 { left: 90%; }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .vignette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 150px 50px rgba(0, 0, 0, 0.7);
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        /* Blog Structure */
+        .page-container {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 4rem;
+            font-weight: bold;
+            color: white; /* Logo color remains white for both themes */
+            margin-bottom: 10px;
+            text-shadow:
+                0 0 10px var(--neon-pink),
+                0 0 20px var(--neon-pink),
+                0 0 30px var(--neon-pink);
+            animation: flicker 2s infinite alternate;
+            font-family: 'Outrun', sans-serif;
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            color: var(--neon-blue); /* Tagline color remains neon blue */
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 10px var(--neon-blue);
+            font-family: 'Outrun', sans-serif;
+            margin-bottom: 2rem;
+        }
+
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav.pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 40px;
+        }
+
+        nav a {
+            color: var(--text-color); /* Navigation link color changes with theme */
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        header nav {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        header nav a {
+            color: white; /* Header nav links remain white */
+            text-decoration: none;
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Outrun', sans-serif;
+        }
+
+        header nav a::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: var(--neon-blue); /* Underline color remains neon blue */
+            transition: all 0.3s;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        header nav a:hover {
+            color: var(--neon-blue); /* Hover color remains neon blue */
+        }
+
+        header nav a:hover::before {
+            left: 0;
+        }
+
+        .content {
+            display: grid;
+            /* Default grid layout: Recent Posts | Main Content | Search */
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 40px;
+            margin-top: 50px;
+            transition: grid-template-columns 0.5s ease-in-out; /* Smooth transition */
+        }
+
+        /* Styles for single post view */
+        body.single-post-view .content {
+            grid-template-columns: 1fr; /* Main content takes full width */
+            gap: 0; /* Remove gap when sidebars are hidden */
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            /* Removed auto margins to let grid handle centering */
+            /* max-width: 800px; /* Limit the width of the main content */
+        }
+
+        .post-card {
+            background: var(--secondary-color); /* Card background changes with theme */
+            backdrop-filter: blur(10px); /* Apply blur in both modes */
+            border-radius: 10px;
+            padding: 2rem;
+            border: 1px solid var(--border-color); /* Border color changes with theme */
+            box-shadow: 0 0 20px rgba(54, 226, 248, 0.2); /* Keep a subtle neon glow effect */
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        body.dark-mode .post-card {
+             background: rgba(0, 0, 0, 0.5); /* Dark mode specific card background with transparency */
+             box-shadow: 0 0 20px rgba(54, 226, 248, 0.2);
+        }
+
+        .post-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 10px rgba(54, 226, 248, 0.3);
+        }
+
+        .post {
+            margin-bottom: 0;
+            position: relative;
+        }
+
+        .post:last-child {
+            margin-bottom: 0;
+        }
+
+        .post-title {
+            font-size: 2rem;
+            margin-bottom: 1.25rem;
+            color: var(--heading-color); /* Post title color changes with theme */
+            position: relative;
+            display: inline-block;
+            font-family: 'Outrun', sans-serif;
+        }
+
+         body.dark-mode .post-title {
+             color: white; /* Dark mode specific post title color */
+         }
+
+
+        .post-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--neon-pink); /* Underline color remains neon pink */
+            box-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        .post-meta {
+            font-size: 0.9rem;
+            color: var(--muted-text-color); /* Meta text color changes with theme */
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1.5rem;
+            font-family: 'Outrun', sans-serif;
+        }
+
+        .post-content {
+            line-height: 1.6;
+            color: var(--text-color); /* Post content color changes with theme */
+        }
+
+        .post-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .read-more {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(to right, var(--neon-purple), var(--neon-pink)); /* Read more button gradient remains neon */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(176, 38, 255, 0.5);
+            font-family: 'Outrun', sans-serif;
+            margin-top: 1.5rem;
+        }
+
+        .read-more:hover {
+            box-shadow: 0 0 20px rgba(176, 38, 255, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            transition: opacity 0.5s ease-in-out; /* Smooth transition */
+        }
+
+        /* Hide sidebars in single post view */
+        body.single-post-view .sidebar {
+            display: none;
+            opacity: 0;
+        }
+
+        .widget {
+            background: var(--secondary-color); /* Widget background changes with theme */
+            backdrop-filter: blur(10px); /* Apply blur in both modes */
+            border-radius: 10px;
+            padding: 30px;
+            border: 1px solid var(--border-color); /* Widget border changes with theme */
+            box-shadow: 0 0 20px rgba(54, 226, 248, 0.2); /* Keep subtle glow */
+        }
+
+        body.dark-mode .widget {
+             background: rgba(0, 0, 0, 0.5); /* Dark mode specific widget background with transparency */
+             box-shadow: 0 0 20px rgba(54, 226, 248, 0.2);
+        }
+
+
+        .widget-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--neon-blue); /* Widget title color remains neon blue */
+            position: relative;
+            padding-bottom: 10px;
+            font-family: 'Outrun', sans-serif;
+        }
+
+        .widget-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: var(--neon-blue); /* Widget title underline remains neon blue */
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .search-form {
+            display: flex;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 8px 12px; /* Decreased padding for smaller size */
+            border: 1px solid var(--border-color); /* Border color changes with theme */
+            background: var(--secondary-color); /* Search input background changes with theme */
+            color: var(--text-color); /* Search input text color changes with theme */
+            border-radius: 5px 0 0 5px;
+            font-family: 'Inter', sans-serif; /* Changed to Inter for input text */
+            font-size: 0.9rem; /* Slightly smaller font */
+             box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); /* Add subtle inner shadow */
+        }
+
+         body.dark-mode .search-input {
+             color: white; /* Dark mode specific search input text color */
+             background: rgba(255, 255, 255, 0.1); /* Dark mode specific search input background */
+             border: 1px solid rgba(54, 226, 248, 0.3); /* Dark mode specific border */
+             box-shadow: none; /* Remove inner shadow in dark mode */
+         }
+
+        .search-button {
+            padding: 8px 12px; /* Decreased padding to match input */
+            background: var(--neon-purple); /* Search button background remains neon purple */
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            font-family: 'Outrun', sans-serif;
+            font-size: 0.9rem; /* Slightly smaller font */
+            transition: background-color 0.3s ease;
+        }
+
+        .search-button:hover {
+             background: var(--neon-pink); /* Change background on hover */
+        }
+
+        .categories-list, .recent-posts-list {
+            list-style: none;
+            padding: 0; /* Added padding: 0 */
+            margin: 0; /* Added margin: 0 */
+        }
+
+        .categories-list li, .recent-posts-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color); /* List item border changes with theme */
+        }
+
+        body.dark-mode .categories-list li, body.dark-mode .recent-posts-list li {
+             border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Dark mode specific border */
+        }
+
+
+        .categories-list li:last-child, .recent-posts-list li:last-child {
+            border-bottom: none;
+        }
+
+        .categories-list a, .recent-posts-list a {
+            color: var(--text-color); /* List item link color changes with theme */
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+            width: 100%;
+            font-family: 'Inter', sans-serif; /* Changed to Inter for list item text */
+        }
+
+        body.dark-mode .categories-list a, body.dark-mode .recent-posts-list a {
+            color: #e0e0e0; /* Dark mode specific list item link color */
+        }
+
+
+        .categories-list a:hover, .recent-posts-list a:hover {
+            color: var(--neon-blue); /* Hover color remains neon blue */
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        footer {
+            margin-top: 80px;
+            padding: 40px 0;
+            text-align: center;
+            border-top: 1px solid var(--border-color); /* Footer border changes with theme */
+            position: relative;
+            z-index: 2;
+        }
+
+         body.dark-mode footer {
+             border-top: 1px solid rgba(255, 255, 255, 0.1); /* Dark mode specific footer border */
+         }
+
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            color: var(--muted-text-color); /* Footer link color changes with theme */
+            text-decoration: none;
+            transition: all 0.3s;
+            font-family: 'Outrun', sans-serif;
+        }
+
+        body.dark-mode .footer-links a {
+            color: #b0b0b0; /* Dark mode specific footer link color */
+        }
+
+
+        .footer-links a:hover {
+            color: var(--neon-blue); /* Hover color remains neon blue */
+        }
+
+        .copyright {
+            color: var(--muted-text-color); /* Copyright text color changes with theme */
+            font-family: 'Outrun', sans-serif;
+        }
+
+         body.dark-mode .copyright {
+             color: #707070; /* Dark mode specific copyright text color */
+         }
+
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 40px;
+        }
+
+        .pagination a {
+            display: inline-block;
+            padding: 8px 15px;
+            background: var(--secondary-color); /* Pagination background changes with theme */
+            color: var(--text-color); /* Pagination text color changes with theme */
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+            border: 1px solid var(--border-color); /* Pagination border changes with theme */
+            font-family: 'Outrun', sans-serif;
+        }
+
+         body.dark-mode .pagination a {
+             background: rgba(0, 0, 0, 0.5); /* Dark mode specific pagination background */
+             color: white; /* Dark mode specific pagination text color */
+             border: 1px solid rgba(54, 226, 248, 0.3); /* Dark mode specific pagination border */
+         }
+
+
+        .pagination a:hover, .pagination a.active {
+            background: var(--neon-purple); /* Pagination hover/active background remains neon purple */
+            box-shadow: 0 0 10px rgba(176, 38, 255, 0.5);
+            color: white; /* Ensure text is white on neon background */
+        }
+
+        @keyframes moveGrid {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 40px; }
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                text-shadow:
+                    0 0 10px var(--neon-pink),
+                    0 0 20px var(--neon-pink),
+                    0 0 30px var(--neon-pink);
+            }
+            20%, 24%, 55% {
+                text-shadow: none;
+            }
+        }
+
+        /* Dark Mode Toggle Styles */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .toggle-label {
+            color: var(--text-color); /* Toggle label color changes with theme */
+            font-family: 'Outrun', sans-serif;
+            font-size: 0.9rem;
+            margin: 0 10px;
+        }
+
+        body.dark-mode .toggle-label {
+             color: #e0e0e0; /* Dark mode specific toggle label color */
+        }
+
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            background-color: #ccc; /* Default light mode background */
+            border-radius: 34px;
+            transition: background-color 0.4s;
+            cursor: pointer;
+        }
+
+        .toggle-switch::before {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: white;
+            top: 4px;
+            left: 4px; /* Light mode position */
+            transition: transform 0.4s;
+        }
+
+        .toggle-switch.dark-mode {
+            background-color: var(--neon-blue); /* Dark mode background */
+        }
+
+        .toggle-switch.dark-mode::before {
+            transform: translateX(26px); /* Dark mode position */
+        }
+
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            .content {
+                /* Stack columns on smaller screens */
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                /* Order sidebar elements */
+                display: flex;
+                flex-direction: column;
+                gap: 40px;
+            }
+
+            /* Ensure widgets take full width and stack */
+            .sidebar .widget {
+                 width: 100%;
+                 margin-left: 0;
+                 margin-right: 0;
+            }
+
+            /* Adjust order for small screens */
+            .sidebar .widget:first-child { /* Search widget */
+                order: 2;
+            }
+             .sidebar .widget:last-child { /* Recent Posts widget */
+                order: 1;
+            }
+
+
+            .logo {
+                font-size: 3rem;
+            }
+
+            nav {
+                flex-wrap: wrap;
+            }
+            header {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .main-content, .widget {
+                padding: 20px;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .tagline {
+                font-size: 1rem;
+            }
+
+            nav a {
+                font-size: 1rem;
+                padding: 5px 10px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+    <div class="scene-container" aria-hidden="true">
+        <div class="background"></div>
+        <div class="stars" id="stars"></div>
+        <div class="sun"></div>
+        <div class="mountains">
+            <div class="mountain mountain1"></div>
+            <div class="mountain mountain2"></div>
+            <div class="mountain mountain3"></div>
+            <div class="mountain mountain4"></div>
+            <div class="mountain mountain5"></div>
+        </div>
+        <div class="grid"></div>
+        <div class="overlay"></div>
+        <div class="vignette"></div>
+    </div>
+
+    <div class="page-container">
+        <header>
+            <h1 class="logo">BUZZER BLOG</h1>
+            <p class="tagline"></p>
+            <nav aria-label="Main Navigation">
+                <a href="#" aria-current="page">Home</a>
+                <a href="#">Articles</a>
+                <a href="#">Reviews</a>
+                <a href="#">Gallery</a>
+                <a href="#">About</a>
+                <a href="#">Contact</a>
+            </nav>
+             <div class="toggle-container">
+                <span class="toggle-label">Light</span>
+                <label class="toggle-switch" id="dark-mode-toggle"></label>
+                <span class="toggle-label dark-mode">Dark</span>
+            </div>
+             <div class="ad-container mt-8">
+                <script type="text/javascript">
+                    atOptions = {
+                        'key' : '66870dd904b9c6372746e531a831051e',
+                        'format' : 'iframe',
+                        'height' : 60,
+                        'width' : 468,
+                        'params' : {}
+                    };
+                </script>
+                <script type="text/javascript" src="//www.highperformanceformat.com/66870dd904b9c6372746e531a831051e/invoke.js"></script>
+            </div>
+        </header>
+
+        <div class="content">
+             <aside class="sidebar" id="recent-posts-sidebar">
+                <section class="widget">
+                    <h3 class="widget-title">Recent Posts</h3>
+                    <nav aria-label="Recent Posts">
+                        <ul class="recent-posts-list" id="recent-posts-list">
+                            <p class="text-gray-500 text-center">Loading recent posts...</p>
+                        </ul>
+                    </nav>
+                </section>
+
+                 <section class="widget">
+                     <h3 class="widget-title">Sponsored</h3>
+                     <div class="ad-placeholder">
+                         <p class="text-gray-500 text-center">Native Banner Ad Here</p>
+                         </div>
+                </section>
+
+                 <section class="widget">
+                     <h3 class="widget-title">Recommended</h3>
+                     <div class="ad-container">
+                         <script async="async" data-cfasync="false" src="//pl26531085.profitableratecpm.com/085b806dbf0b9515bf8bd84ae42bc237/invoke.js"></script>
+                         <div id="container-085b806dbf0b9515bf8bd84ae42bc237"></div>
+                     </div>
+                </section>
+
+             </aside>
+
+            <main class="main-content" id="blog-posts">
+                <p class="text-gray-500 text-center py-10">Loading posts...</p>
+            </main>
+
+            <aside class="sidebar" id="search-sidebar">
+                <section class="widget">
+                    <h3 class="widget-title">Search</h3>
+                    <form class="search-form" role="search">
+                        <label for="search-input" class="visually-hidden">Search the blog</label>
+                        <input type="search" id="search-input" class="search-input" placeholder="Search...">
+                        <button type="submit" class="search-button">Go</button>
+                    </form>
+                </section>
+            </aside>
+        </div>
+
+        <footer>
+             <div class="ad-container mb-8">
+                <script type="text/javascript">
+                    atOptions = {
+                        'key' : '66870dd904b9c6372746e531a831051e',
+                        'format' : 'iframe',
+                        'height' : 60,
+                        'width' : 468,
+                        'params' : {}
+                    };
+                </script>
+                <script type="text/javascript" src="//www.highperformanceformat.com/66870dd904b9c6372746e531a831051e/invoke.js"></script>
+            </div>
+            <nav class="footer-links" aria-label="Footer Navigation">
+                <a href="#">About</a>
+                <a href="#">Contact</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+            </nav>
+            <p class="copyright">© 2025 Retrowave Blog. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script type='text/javascript' src='//pl26531062.profitableratecpm.com/f5/f7/84/f5f7841074faeb94af8862a345602bcd.js'></script>
+
+    <script type='text/javascript' src='//pl26531007.profitableratecpm.com/df/f4/04/dff4047d363f53a69d9a938cf0a730bc.js'></script>
+
+    <script>
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const count = 150;
+
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+
+                const x = Math.random() * 100;
+                const y = Math.random() * 70;
+
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+
+                const size = Math.random() * 2 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+
+                star.style.animationDelay = `${Math.random() * 2}s`;
+
+                starsContainer.appendChild(star);
+            }
+        }
+
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const body = document.body; // Get body element
+
+        // Function to set the mode
+        function setMode(mode) {
+             if (mode === 'dark') {
+                body.classList.add('dark-mode');
+                darkModeToggle.classList.add('dark-mode'); // Add class to toggle switch for styling
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                body.classList.remove('dark-mode');
+                darkModeToggle.classList.remove('dark-mode'); // Remove class from toggle switch
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        }
+
+        // Check local storage on load
+        // Default to dark mode if no preference is found or if 'enabled' is stored
+        if (localStorage.getItem('darkMode') === 'disabled') {
+            setMode('light'); // If 'disabled' is explicitly stored, set to light
+        } else {
+            setMode('dark'); // Default to dark mode
+        }
+
+        // Toggle mode on click
+        darkModeToggle.addEventListener('click', () => {
+            if (body.classList.contains('dark-mode')) {
+                setMode('light'); // If currently dark, switch to light
+            } else {
+                setMode('dark'); // If currently light, switch to dark
+            }
+        });
+
+
+        window.onload = function() {
+            createStars();
+             // Check URL on load to see if a specific post should be loaded
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialPostId = urlParams.get('id');
+
+            if (initialPostId) {
+                // If an 'id' parameter is in the URL, try to open that post
+                openPost(initialPostId);
+            } else {
+                // If no 'id' parameter, load the main list and recent posts as usual
+                fetchPosts();
+                fetchRecentPosts();
+            }
+        };
+
+
+        async function fetchPosts() {
+            try {
+                // Attempt to fetch posts from the API
+                const response = await fetch('api.php?action=get_posts');
+                if (!response.ok) {
+                    // If the response is not OK, throw an error
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const posts = await response.json();
+                renderPosts(posts); // Render the fetched posts
+            } catch (error) {
+                // Catch any errors during the fetch or processing
+                console.error('Could not fetch blog posts:', error);
+                const blogPostsContainer = document.getElementById('blog-posts');
+                // Display an error message to the user
+                blogPostsContainer.innerHTML = '<p class="text-red-500 text-center py-10">Failed to load posts. Please ensure api.php is correctly configured and accessible and returns JSON.</p>';
+            } finally {
+                 // Ensure sidebars are visible when displaying the post list
+                 document.body.classList.remove('single-post-view');
+            }
+        }
+
+        async function fetchRecentPosts() {
+             try {
+                // Attempt to fetch recent posts from the API
+                // NOTE: You need to implement the 'get_recent_posts' action in your api.php
+                const response = await fetch('api.php?action=get_recent_posts');
+                 if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const recentPosts = await response.json();
+                renderRecentPosts(recentPosts); // Render the fetched recent posts
+            } catch (error) {
+                console.error('Could not fetch recent blog posts:', error);
+                const recentPostsList = document.getElementById('recent-posts-list');
+                 recentPostsList.innerHTML = '<p class="text-red-500 text-center">Failed to load recent posts. Please ensure api.php has a "get_recent_posts" action and returns JSON.</p>';
+            }
+        }
+
+        function renderPosts(posts) {
+            const blogPostsContainer = document.getElementById('blog-posts');
+            blogPostsContainer.innerHTML = ''; // Clear loading message or previous posts
+            if (!Array.isArray(posts) || posts.length === 0) {
+                blogPostsContainer.innerHTML = '<p class="text-gray-500 text-center py-10">No posts available yet.</p>';
+                return;
+            }
+
+            posts.forEach((post) => {
+                const postCard = document.createElement('article');
+                postCard.className = 'post-card';
+                postCard.dataset.postId = post.id; // Store post ID on the card
+
+                const titleElement = document.createElement('h2');
+                titleElement.className = 'post-title';
+                titleElement.textContent = post.title;
+
+                const metaElement = document.createElement('div');
+                metaElement.className = 'post-meta';
+                metaElement.innerHTML = `
+                    <span><i class="fas fa-user"></i> ${post.author || 'Unknown Author'}</span>
+                    <span><i class="fas fa-calendar-days"></i> ${post.date || 'Unknown Date'}</span>
+                `;
+
+                const excerptElement = document.createElement('p');
+                excerptElement.className = 'post-excerpt';
+                // Use a safer way to get the first sentence or a truncated version
+                const firstSentenceMatch = post.content ? post.content.match(/[^.!?]*[.!?]/) : null;
+                const firstSentence = firstSentenceMatch ? firstSentenceMatch[0] : (post.content ? post.content.substring(0, 150) + '...' : 'No content available.');
+                const excerpt = firstSentence.length > 150 ? firstSentence.substring(0, 150) + '...' : firstSentence; // Increased excerpt length slightly
+                excerptElement.textContent = excerpt;
+
+                postCard.appendChild(titleElement);
+                postCard.appendChild(metaElement);
+                postCard.appendChild(excerptElement);
+                blogPostsContainer.appendChild(postCard);
+            });
+
+            // Add click event listener to each post card *after* they are rendered
+            const postCards = document.querySelectorAll('.post-card');
+            postCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const postId = card.dataset.postId;
+                    openPost(postId); // Call openPost when the card is clicked
+                });
+            });
+        }
+
+         function renderRecentPosts(recentPosts) {
+            const recentPostsList = document.getElementById('recent-posts-list');
+            recentPostsList.innerHTML = ''; // Clear loading message or previous list
+             if (!Array.isArray(recentPosts) || recentPosts.length === 0) {
+                recentPostsList.innerHTML = '<p class="text-gray-500 text-center">No recent posts available.</p>';
+                return;
+            }
+
+            recentPosts.forEach((post) => {
+                const listItem = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = `#post-${post.id}`; // Link to the post (can be updated based on your routing)
+                link.textContent = post.title || 'Untitled Post'; // Display title, or 'Untitled Post' if missing
+                 link.dataset.postId = post.id; // Store post ID on the link
+
+                // Add click event listener to recent post links
+                link.addEventListener('click', (event) => {
+                    event.preventDefault(); // Prevent default link behavior
+                    const postId = event.target.dataset.postId;
+                    openPost(postId); // Open the post when a recent post link is clicked
+                });
+
+                listItem.appendChild(link);
+                recentPostsList.appendChild(listItem);
+            });
+        }
+
+
+        async function openPost(postId) {
+            try {
+                // Attempt to fetch a single post from the API
+                const response = await fetch(`api.php?action=get_post&id=${postId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const post = await response.json();
+
+                const blogPostsContainer = document.getElementById('blog-posts');
+                blogPostsContainer.innerHTML = ''; // Clear the list view
+
+                if (post && post.id) { // Check if post object is valid and has an ID
+                    const postContainer = document.createElement('article'); // Use article for single post
+                    postContainer.className = 'post-full post-card'; // Added post-card class for consistent styling
+
+                    const postTitleElement = document.createElement('h1'); // Use h1 for single post title
+                    postTitleElement.className = 'post-title';
+                    postTitleElement.textContent = post.title || 'Untitled Post';
+
+                    const postMetaElement = document.createElement('div');
+                    postMetaElement.className = 'post-meta';
+                    postMetaElement.innerHTML = `
+                        <span><i class="fas fa-user"></i> ${post.author || 'Unknown Author'}</span>
+                        <span><i class="fas fa-calendar-days"></i> ${post.date || 'Unknown Date'}</span>
+                    `;
+
+                    const postContentElement = document.createElement('div');
+                    postContentElement.className = 'post-content prose'; // Added prose class for better content styling
+                    postContentElement.innerHTML = post.content || '<p>No content available for this post.</p>';
+
+                    // Optional: Add tags if your API provides them
+                    // const tagsElement = document.createElement('div');
+                    // tagsElement.className = 'post-tags';
+                    // const tagsArray = post.tags ? post.tags.split(',') : [];
+                    // tagsArray.forEach((tag) => {
+                    //     const tagSpan = document.createElement('span');
+                    //     tagSpan.className = 'post-tag';
+                    //     tagSpan.textContent = tag.trim();
+                    //     tagsElement.appendChild(tagSpan);
+                    // });
+
+                    postContainer.appendChild(postTitleElement);
+                    postContainer.appendChild(postMetaElement);
+                    postContainer.appendChild(postContentElement);
+                    // Optional: Append tagsElement if used
+                    // postContainer.appendChild(tagsElement);
+
+                    blogPostsContainer.appendChild(postContainer);
+
+                    // Add class to body to trigger single post view styles
+                    document.body.classList.add('single-post-view');
+
+                    // Update URL and history for single post view
+                    history.pushState({ postId: postId }, post.title || 'Post Detail', `post.html?id=${postId}`); // Using post.html as a placeholder
+                } else {
+                    blogPostsContainer.innerHTML = '<p class="text-red-500 text-center py-10">Post not found or invalid data received.</p>';
+                }
+            } catch (error) {
+                console.error('Could not fetch single post:', error);
+                const blogPostsContainer = document.getElementById('blog-posts');
+                blogPostsContainer.innerHTML = '<p class="text-red-500 text-center py-10">Failed to load post. Please ensure api.php has a "get_post" action and returns JSON.</p>';
+            }
+        }
+
+        // Handle back/forward button for history state
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.postId) {
+                // If there's a postId in the state, load that post
+                openPost(event.state.postId);
+            } else {
+                // If no postId (or initial state), load the main list of posts
+                fetchPosts();
+                // Also re-fetch and display recent posts when going back to list view
+                fetchRecentPosts();
+            }
+        });
+
+         // Check URL on load to see if a specific post should be loaded
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialPostId = urlParams.get('id');
+        if (initialPostId) {
+            // If an 'id' parameter is in the URL, try to open that post
+            window.onload = function() {
+                createStars();
+                // Only open the specific post, don't load all posts or recent posts initially
+                openPost(initialPostId);
+            };
+        } else {
+            // If no 'id' parameter, load the main list and recent posts as usual
+             window.onload = function() {
+                createStars();
+                fetchPosts();
+                fetchRecentPosts();
+            };
+        }
+
+
+    </script>
+</body>
+</html>
